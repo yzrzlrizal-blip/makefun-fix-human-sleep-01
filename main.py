@@ -30,9 +30,12 @@ def main():
 
     if not text or not text.strip():
         return fail("entry is empty or only whitespace")
-    if "\n" in text.rstrip("\n") or "\r" in text:
+    # Tolerate one trailing newline (LF or CRLF) from the shipped file.
+    text = text.rstrip("\r\n")
+    if "\n" in text or "\r" in text:
         return fail("entry must be a single line")
-    text = text.rstrip("\n")
+    if "\x00" in text:
+        return fail("entry contains a NUL byte")
     if len(text) < 1 or len(text) > MAX_CHARS:
         return fail(f"entry is {len(text)} characters, must be 1-{MAX_CHARS}")
     if any(ord(ch) < 32 and ch not in ("\t",) for ch in text):
